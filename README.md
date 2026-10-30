@@ -4,11 +4,13 @@ A deployable MERN starter with company-isolated MongoDB records, login, dashboar
 
 ## Run locally
 1. Install Node.js 20+ and MongoDB 7+.
-2. Copy `server/.env.example` to `server/.env`. Set `JWT_SECRET`, `MONGODB_URI`, and `GROQ_API_KEY`.
-3. For Google sign-in, create an OAuth app with callback URL `http://localhost:4000/api/auth/oauth/google/callback`, then set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `API_ORIGIN`, and `CLIENT_ORIGIN`.
+2. Copy `server/.env.example` to `server/.env`. Replace `JWT_SECRET` with a private random value of at least 32 characters. Keep `server/.env` local and never commit or share it.
+3. For Google sign-in, create a Google OAuth 2.0 **Web application** client in Google Cloud Console. Add `http://localhost:4000/api/auth/oauth/google/callback` as an authorized redirect URI. Put its client ID and client secret in `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `server/.env`; keep `API_ORIGIN=http://localhost:4000` and `CLIENT_ORIGIN=http://localhost:5173` for local development. Do not paste the client secret into the frontend.
 4. `npm install`
 5. `npm run dev`
 6. Open http://localhost:5173 and register a company.
+
+Email/password registration requires a company name and a password of at least 8 characters. Google sign-in uses Google's verified email address; if it matches an existing account, the Google identity is linked to that account.
 
 ## Deployment
 Build client with `npm run build`; serve `client/dist` on a static host. Deploy `server` as a persistent Node service with MongoDB Atlas. Set `CLIENT_ORIGIN` and `API_ORIGIN` to the deployed frontend and backend origins, and configure a frontend reverse proxy for `/api` to your backend. Register each OAuth callback URL with its provider. Never expose the Groq key in the browser. Use HTTPS and secure secret storage.

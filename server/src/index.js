@@ -13,6 +13,7 @@ import { extname, join } from 'node:path';
 import { z } from 'zod';
 import multer from 'multer';
 import ExcelJS from 'exceljs';
+import { stripSpreadsheetDrawings } from './spreadsheet.js';
 import mammoth from 'mammoth';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { runOrchestrator, selectAgent } from './agents/orchestrator.js';
@@ -24,6 +25,14 @@ app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173', credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use('/api', rateLimit({ windowMs: 60000, limit: 100 }));
+
+const authAttemptLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts. Please try again later.' }
+});
 
 const maxUploadBytes = 5 * 1024 * 1024;
 const importTempDirectory = join(tmpdir(), 'work-pilot-erp-imports');
@@ -175,7 +184,7 @@ function cellToText(value) {
 async function extractSpreadsheetText(buffer) {
   if (buffer[0] !== 0x50 || buffer[1] !== 0x4b) throw new Error('This does not look like a valid .xlsx file.');
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buffer);
+  await workbook.xlsx.load(await stripSpreadsheetDrawings(buffer));
   const sheets = workbook.worksheets.slice(0, 20).map(extractWorksheetText);
   return sheets.join('\n\n').slice(0, maxImportCharacters);
 }
@@ -385,7 +394,7 @@ app.get('/api/health', (_, res) => {
   });
 });
 
-app.post('/api/auth/register', wrap(async (req, res) => {
+app.post('/api/auth/register', authAttemptLimit, wrap(async (req, res) => {
   const schema = z.object({
     company: z.string().trim().min(2),
     email: z.string().email(),
@@ -411,7 +420,7 @@ app.post('/api/auth/register', wrap(async (req, res) => {
   });
 }));
 
-app.post('/api/auth/login', wrap(async (req, res) => {
+app.post('/api/auth/login', authAttemptLimit, wrap(async (req, res) => {
   const body = z.object({
     email: z.string().email(),
     password: z.string().min(1)

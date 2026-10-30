@@ -20,6 +20,7 @@ export function AuthScreen({ register, setRegister, form, setForm, submitAuth, s
             <input
               type="text"
               placeholder="Company name"
+              autoComplete="organization"
               value={form.company}
               onChange={(event) => setForm({ ...form, company: event.target.value })}
               required
@@ -28,6 +29,7 @@ export function AuthScreen({ register, setRegister, form, setForm, submitAuth, s
           <input
             type="email"
             placeholder="Work email"
+            autoComplete="email"
             value={form.email}
             onChange={(event) => setForm({ ...form, email: event.target.value })}
             required
@@ -35,6 +37,8 @@ export function AuthScreen({ register, setRegister, form, setForm, submitAuth, s
           <input
             type="password"
             placeholder="Password"
+            autoComplete={register ? 'new-password' : 'current-password'}
+            minLength={register ? 8 : undefined}
             value={form.password}
             onChange={(event) => setForm({ ...form, password: event.target.value })}
             required
