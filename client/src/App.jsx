@@ -183,11 +183,16 @@ export default function App() {
     }
   };
 
-  const socialLogin = (provider) => {
-    const company = register ? form.company : '';
-    const query = company ? `?company=${encodeURIComponent(company)}` : '';
-    window.location.assign(`/api/auth/oauth/${provider}${query}`);
-  };
+  
+const socialLogin = (provider) => {
+  const company = register ? form.company : '';
+  const query = company ? `?company=${encodeURIComponent(company)}` : '';
+
+  window.location.assign(
+    `https://mini-erp-api-nql7.onrender.com/api/auth/oauth/${provider}${query}`
+  );
+};
+
 
   const runAI = async (event) => {
     event.preventDefault();
