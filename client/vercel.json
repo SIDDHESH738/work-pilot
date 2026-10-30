@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://mini-erp-api-nql7.onrender.com/api/$1"
+    }
+  ]
+}
